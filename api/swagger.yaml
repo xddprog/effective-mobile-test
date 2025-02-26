@@ -1,0 +1,219 @@
+openapi: 3.0.0
+info:
+  title: Appeal Management API
+  description: API для управления обращениями
+  version: 1.0.0
+
+paths:
+  /api/v1/appeals:
+    post:
+      summary: Создать новое обращение
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAppealDto'
+      responses:
+        '201':
+          description: Обращение успешно создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppealDto'
+        '400':
+          description: Некорректные данные
+
+    get:
+      summary: Получить список обращений
+      parameters:
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          description: Фильтр по конкретной дате (YYYY-MM-DD)
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+          description: Начало диапазона дат (YYYY-MM-DD)
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+          description: Конец диапазона дат (YYYY-MM-DD)
+      responses:
+        '200':
+          description: Список обращений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AppealDto'
+
+  /api/v1/appeals/{id}/start:
+    put:
+      summary: Взять обращение в работу
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Обращение переведено в статус "В работе"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppealDto'
+        '404':
+          description: Обращение не найдено
+
+  /api/v1/appeals/{id}/complete:
+    put:
+      summary: Завершить обработку обращения
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAppealDto'
+      responses:
+        '200':
+          description: Обращение завершено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppealDto'
+        '404':
+          description: Обращение не найдено
+
+  /api/v1/appeals/{id}/cancel:
+    put:
+      summary: Отменить обращение
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAppealDto'
+      responses:
+        '200':
+          description: Обращение отменено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppealDto'
+        '404':
+          description: Обращение не найдено
+
+  /api/v1/appeals/cancel-all-in-progress:
+    put:
+      summary: Отменить все обращения в статусе "В работе"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: Причина отмены для всех обращений
+              required:
+                - message
+      responses:
+        '200':
+          description: Все обращения в работе отменены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    description: Количество отмененных обращений
+
+components:
+  schemas:
+    CreateAppealDto:
+      type: object
+      properties:
+        subject:
+          type: string
+          description: Тема обращения
+        message:
+          type: string
+          description: Текст обращения
+      required:
+        - subject
+        - message
+
+    UpdateAppealDto:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Текст решения или причина отмены
+      required:
+        - id
+        - message
+
+    AppealDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID обращения
+        subject:
+          type: string
+          description: Тема обращения
+        message:
+          type: string
+          description: Текст обращения
+        status:
+          type: string
+          enum:
+            - Новое
+            - В работе
+            - Завершено
+            - Отменено
+          description: Статус обращения
+        resolution:
+          type: string
+          description: Текст решения (для статуса Завершено)
+        cancelReason:
+          type: string
+          description: Причина отмены (для статуса Отменено)
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата создания
+        updatedAt:
+          type: string
+          format: date-time
+          description: Дата последнего обновления
+      required:
+        - id
+        - subject
+        - message
+        - status
+        - createdAt
+        - updatedAt
