@@ -29,8 +29,9 @@ appealsRouter.get(
                 req.query.date, 
                 req.query.startDate, 
                 req.query.endDate,
-                req.query.limit || 10,
-                req.query.offset || 0
+                req.query.limit,
+                req.query.offset,
+                req.query.order
             )
             res.status(200).json(appeals)
         } catch (err) {

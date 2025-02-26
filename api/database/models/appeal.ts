@@ -1,5 +1,5 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { AppealStatus } from "../../config/enums.js";
+import { AppealStatuses } from "../../config/enums.js";
 
 @Entity()
 export class Appeal extends BaseEntity {
@@ -14,10 +14,10 @@ export class Appeal extends BaseEntity {
 
     @Column({
         type: "enum", 
-        enum: AppealStatus, 
-        default: AppealStatus.NEW
+        enum: AppealStatuses, 
+        default: AppealStatuses.NEW
     })
-    status: AppealStatus
+    status: AppealStatuses
 
     @Column({nullable: true})
     resolution: string

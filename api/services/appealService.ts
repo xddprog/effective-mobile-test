@@ -1,4 +1,4 @@
-import { AppealStatus } from "../config/enums.js";
+import { AppealStatuses, OrderDirections } from "../config/enums.js";
 import { Appeal } from "../database/models/appeal.js";
 import { AppealDto, CreateAppealDto, UpdateAppealDto } from "../dto/appeal.js";
 import { ApiError } from "../errors/apiErrors.js";
@@ -52,34 +52,39 @@ export class AppealService implements IService {
         date: string | undefined, 
         startDate: string | undefined, 
         endDate: string | undefined,
-        limit: number,
-        offset: number
+        limit: number | undefined,
+        offset: number | undefined,
+        order: OrderDirections | undefined
     ): Promise<Array<AppealDto> | AppealDto> {
+        order = order || OrderDirections.ASC;
+        limit = limit || 10;
+        offset = offset || 0;
+
+        let appeals: Array<Appeal> = []
+
         if (!date && !startDate && !endDate) {
-            const appeals = await this.repository.getAll(limit, offset);
-            return appeals.map(appeal => this.toDtoModel(appeal));
-        }
-        
-        if (date) {
+            appeals = await this.repository.getAll(limit, offset, order);
+        } else if (date) {
             const parsedDate = this.parseAndValidateDate(date,);
             const endDate = new Date(parsedDate);
+
             endDate.setHours(23, 59, 59, 999);
+            appeals = await this.repository.getByDate(
+                parsedDate, endDate, limit, offset, order
+            );
+        } else {
+            const parsedStartDate = this.parseAndValidateDate(startDate);
+            const parsedEndDate = this.parseAndValidateDate(endDate);
 
-            const appeals = await this.repository.getByDate(parsedDate, endDate, limit, offset);
-            return appeals.map(appeal => this.toDtoModel(appeal));
+            appeals = await this.repository.getByDateRange(
+                parsedStartDate, parsedEndDate, limit, offset, order
+            );
         }
-
-        const parsedStartDate = this.parseAndValidateDate(startDate);
-        const parsedEndDate = this.parseAndValidateDate(endDate);
-
-        const appeals = await this.repository.getByDateRange(
-            parsedStartDate, parsedEndDate, limit, offset
-        );
         return appeals.map(appeal => this.toDtoModel(appeal));
     }
 
     public async setTaskInProgress(appealId: number): Promise<AppealDto> {
-        const appeal = await this.repository.update(appealId, {status: AppealStatus.IN_WORK});
+        const appeal = await this.repository.update(appealId, {status: AppealStatuses.IN_WORK});
         if (!appeal) {
             throw ApiError.notFound("Appeal not found.");
         }
@@ -89,7 +94,7 @@ export class AppealService implements IService {
     public async setTaskCompleted(appealId: number, form: UpdateAppealDto) {
         const appeal = await this.repository.update(
             appealId, 
-            {status: AppealStatus.COMPLETED, resolution: form.message}
+            {status: AppealStatuses.COMPLETED, resolution: form.message}
         );
         if (!appeal) {
             throw ApiError.notFound("Appeal not found.");
@@ -100,7 +105,7 @@ export class AppealService implements IService {
     public async setTaskCanceled(appealId: number, form: UpdateAppealDto) {
         const appeal = await this.repository.update(
             appealId, 
-            {status: AppealStatus.CANCELED, cancelReason: form.message}
+            {status: AppealStatuses.CANCELED, cancelReason: form.message}
         );
         if (!appeal) {
             throw ApiError.notFound("Appeal not found.");

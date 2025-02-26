@@ -1,3 +1,5 @@
+import { OrderDirections } from "../config/enums.js";
+
 export interface CreateAppealDto {
     subject: string;
     message: string;
@@ -26,4 +28,5 @@ export interface AppealQueryParams {
     endDate?: string;
     limit?: number;
     offset?: number
+    order?: OrderDirections
 }

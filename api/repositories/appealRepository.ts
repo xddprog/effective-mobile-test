@@ -3,7 +3,7 @@ import { Appeal } from "../database/models/appeal.js";
 import { IRepository } from "./base.js";
 import { db } from "../database/adapters/pg_adapter.js";
 import { CreateAppealDto } from "../dto/appeal.js";
-import { AppealStatus } from "../config/enums.js";
+import { AppealStatuses, OrderDirections } from "../config/enums.js";
 
 
 
@@ -19,11 +19,11 @@ export class AppealRepository implements IRepository<Appeal> {
         return await this.model.save(appeal);
     }
 
-    async getAll(limit: number, offset: number) {
+    async getAll(limit: number, offset: number, order: OrderDirections): Promise<Array<Appeal>> {
         return await this.model.find({ 
             take: limit, 
             skip: offset, 
-            order: { id: "ASC" }
+            order: { id: order }
         });
     }
 
@@ -35,7 +35,8 @@ export class AppealRepository implements IRepository<Appeal> {
         date: Date, 
         endDate: Date, 
         limit: number, 
-        offset: number
+        offset: number,
+        order: OrderDirections
     ): Promise<Array<Appeal>> {
         return await this.model.find({ 
             where: {
@@ -43,7 +44,7 @@ export class AppealRepository implements IRepository<Appeal> {
             },
             take: limit,
             skip: offset,
-            order: { id: "ASC" }
+            order: { id: order }
         });
     }
 
@@ -51,7 +52,8 @@ export class AppealRepository implements IRepository<Appeal> {
         startDate: Date, 
         endDate: Date, 
         limit: number, 
-        offset: number
+        offset: number,
+        order: OrderDirections
     ): Promise<Array<Appeal>> {
         return await this.model.find({
             where: {
@@ -59,7 +61,7 @@ export class AppealRepository implements IRepository<Appeal> {
             },
             skip: offset,
             take: limit,
-            order: { id: "ASC" }
+            order: { id: order }
         })
     }
 
@@ -72,11 +74,11 @@ export class AppealRepository implements IRepository<Appeal> {
     }
 
     async setTaskCanceledAllInProgress(): Promise<Array<Appeal>> {
-        const appeals = await this.model.findBy({ status: AppealStatus.IN_WORK });
+        const appeals = await this.model.findBy({ status: AppealStatuses.IN_WORK });
         const updatedIds = appeals.map(appeal => appeal.id);
         await this.model.update({ 
             id: In(updatedIds)}, 
-            { status: AppealStatus.CANCELED }
+            { status: AppealStatuses.CANCELED }
         );
         return await this.model.find({ where: {id: In(updatedIds)} });
     }
