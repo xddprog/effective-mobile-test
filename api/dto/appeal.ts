@@ -24,4 +24,6 @@ export interface AppealQueryParams {
     date?: string;
     startDate?: string;
     endDate?: string;
+    limit?: number;
+    offset?: number
 }

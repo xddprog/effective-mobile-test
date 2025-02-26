@@ -8,8 +8,6 @@ export const errorsMiddleware: ErrorRequestHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  console.error(err.stack || (err.message ? err.message : "Неизвестная ошибка"));
-
   if (err instanceof ApiError) {
     res.status(err.status).json({
       error: {

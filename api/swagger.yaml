@@ -45,6 +45,16 @@ paths:
             type: string
             format: date
           description: Конец диапазона дат (YYYY-MM-DD)
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: Максимальное количество обращений в ответе
+        - in: query
+          name: offset
+          schema: 
+            type: integer
+          description: Количество обращений для пропуска
       responses:
         '200':
           description: Список обращений

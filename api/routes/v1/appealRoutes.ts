@@ -19,14 +19,19 @@ appealsRouter.post(
 appealsRouter.get(
     "/",
     async (
-        req: Request<{}, {}, {}, 
-        AppealQueryParams>, 
+        req: Request<{}, {}, {}, AppealQueryParams>, 
         res: Response<Array<AppealDto> | AppealDto>, 
         next: NextFunction
     ) => {
         try{
             const appealService = new AppealService()
-            const appeals = await appealService.getAppeals(req.query.date, req.query.startDate, req.query.endDate)
+            const appeals = await appealService.getAppeals(
+                req.query.date, 
+                req.query.startDate, 
+                req.query.endDate,
+                req.query.limit || 10,
+                req.query.offset || 0
+            )
             res.status(200).json(appeals)
         } catch (err) {
             next(err)

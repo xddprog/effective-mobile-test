@@ -51,21 +51,30 @@ export class AppealService implements IService {
     public async getAppeals(
         date: string | undefined, 
         startDate: string | undefined, 
-        endDate: string | undefined
+        endDate: string | undefined,
+        limit: number,
+        offset: number
     ): Promise<Array<AppealDto> | AppealDto> {
+        if (!date && !startDate && !endDate) {
+            const appeals = await this.repository.getAll(limit, offset);
+            return appeals.map(appeal => this.toDtoModel(appeal));
+        }
+        
         if (date) {
-            const parsedDate = this.parseAndValidateDate(date);
+            const parsedDate = this.parseAndValidateDate(date,);
             const endDate = new Date(parsedDate);
             endDate.setHours(23, 59, 59, 999);
 
-            const appeals = await this.repository.getByDate(parsedDate, endDate);
+            const appeals = await this.repository.getByDate(parsedDate, endDate, limit, offset);
             return appeals.map(appeal => this.toDtoModel(appeal));
         }
 
         const parsedStartDate = this.parseAndValidateDate(startDate);
         const parsedEndDate = this.parseAndValidateDate(endDate);
 
-        const appeals = await this.repository.getByDateRange(parsedStartDate, parsedEndDate);
+        const appeals = await this.repository.getByDateRange(
+            parsedStartDate, parsedEndDate, limit, offset
+        );
         return appeals.map(appeal => this.toDtoModel(appeal));
     }
 

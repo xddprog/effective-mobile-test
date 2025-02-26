@@ -12,7 +12,7 @@ export const db = new DataSource({
     database: DATABASE_CONFIG.DB_DATABASE,
     entities: [Appeal],
     synchronize: true,
-    logging: true, 
+    logging: false, 
     migrations: [Appeal],
 });
 

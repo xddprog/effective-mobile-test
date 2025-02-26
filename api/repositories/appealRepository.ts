@@ -19,23 +19,47 @@ export class AppealRepository implements IRepository<Appeal> {
         return await this.model.save(appeal);
     }
 
+    async getAll(limit: number, offset: number) {
+        return await this.model.find({ 
+            take: limit, 
+            skip: offset, 
+            order: { id: "ASC" }
+        });
+    }
+
     async getById(id: number): Promise<Appeal | null> {
         return await this.model.findOneBy({ id: id });
     }
 
-    async getByDate(date: Date, endDate: Date): Promise<Array<Appeal>> {
+    async getByDate(
+        date: Date, 
+        endDate: Date, 
+        limit: number, 
+        offset: number
+    ): Promise<Array<Appeal>> {
         return await this.model.find({ 
             where: {
                 createdAt: Between(date, endDate)
-            }
+            },
+            take: limit,
+            skip: offset,
+            order: { id: "ASC" }
         });
     }
 
-    async getByDateRange(startDate: Date, endDate: Date): Promise<Array<Appeal>> {
+    async getByDateRange(
+        startDate: Date, 
+        endDate: Date, 
+        limit: number, 
+        offset: number
+    ): Promise<Array<Appeal>> {
         return await this.model.find({
             where: {
                 createdAt: Between(startDate, endDate)
-            }
+            },
+            skip: offset,
+            take: limit,
+            order: { id: "ASC" }
         })
     }
 
@@ -50,7 +74,10 @@ export class AppealRepository implements IRepository<Appeal> {
     async setTaskCanceledAllInProgress(): Promise<Array<Appeal>> {
         const appeals = await this.model.findBy({ status: AppealStatus.IN_WORK });
         const updatedIds = appeals.map(appeal => appeal.id);
-        await this.model.update({ id: In(updatedIds)}, { status: AppealStatus.CANCELED });
+        await this.model.update({ 
+            id: In(updatedIds)}, 
+            { status: AppealStatus.CANCELED }
+        );
         return await this.model.find({ where: {id: In(updatedIds)} });
     }
 }

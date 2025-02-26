@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node dist/main.js",
-    "build": "tsc",
+    "build": "npx tsc",
     "dev": "ts-node --esm api/main.ts"
   },
   "keywords": [],
